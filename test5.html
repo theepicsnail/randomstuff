@@ -1,0 +1,84 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+
+var canvas = false;
+var ctx = false;
+var lastTime = 0;
+
+$(document).ready(function(){
+    canvas = document.getElementById("myCanvas");
+    ctx = canvas.getContext("2d");
+    ctx.font = "20pt Calibri";
+    ctx.textAlign = "center";
+    init();
+});
+
+function ts(){ return (new Date()).getTime();}
+
+function tick(){
+    var curTime = ts()
+    var ret = 0
+    if(lastTime != 0)
+        ret = curTime - lastTime;
+    lastTime = curTime
+    return ret/1000;
+}
+
+function drawGate(x,y,w,h,ins,outs,text){
+    ctx.beginPath();
+    ctx.rect(x,y,w,h);
+    ctx.fillStyle = "#8ED6FF";
+    ctx.fill();
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = "black";
+    ctx.stroke();
+    var pi2 = Math.PI/2;
+    var pi32= 3*pi2;
+
+    inSpacing = h/(ins+1)
+    inSize = Math.min(inSpacing-5,10)
+    for(var i = 1 ; i <= ins ; i++)
+    {
+        ctx.beginPath()
+        ctx.arc(x,y+i*inSpacing,inSize,pi2,pi32);
+        ctx.closePath()
+        ctx.fill()
+        ctx.stroke()
+    }
+    
+    outSpacing= h/(outs+1)
+    outSize = Math.min(outSpacing-5,10)
+    for(var i = 1 ; i <= outs ; i++)
+    {
+        ctx.beginPath()
+        ctx.arc(x+w,y+i*outSpacing,outSize,pi2,pi32,true);
+        ctx.closePath()
+        ctx.fill()
+        ctx.stroke()
+    }
+    ctx.fillStyle="black"
+    ctx.fillText(text,x+w/2,y+h/2)
+}
+
+
+//Base class for logic gates
+function LogicGate(){
+    var outputs= [false];
+    var inputs = [false];
+    function update(inputArray){
+        
+    }
+}
+
+function init(){
+    drawGate(75,50,100,30,2,1,"AND")
+}
+
+</script>
+</head>
+<body>
+<canvas id="myCanvas" width="500" height="500"></canvas>
+</body>
+</html>

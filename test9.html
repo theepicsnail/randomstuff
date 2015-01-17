@@ -1,0 +1,73 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+
+var canvas = false;
+var context =false;
+var lastTime = 0;
+var canvasLoc = [0,0];
+var timing = []
+var divisions = 10;
+var curCell = 0;
+var width = 0; 
+var height=0;
+var cellWidth =1;
+var cellHeight=1;
+var dirty = []
+
+$(document).ready(function(){
+    canvas = document.getElementById("myCanvas");
+    canvasLoc = [canvas.offsetLeft,canvas.offsetTop];
+    context = canvas.getContext("2d");
+    context.font = "20pt Calibri";
+    context.textAlign = "center";
+    width = canvas.width; 
+    height=canvas.height;
+    cellWidth = Math.floor(width/divisions);
+    cellHeight= Math.floor(height/divisions);
+    
+    for(var i = 0 ; i < divisions*divisions ; i ++){
+        dirty[i]=true;
+    }
+    setTimeout("render()",1);
+});
+
+
+function getRGB(x,y){
+    out = [0,0,255]
+    return out;
+}
+
+function render(){
+    
+    var c = 0;
+    for(;c<divisions*divisions && !dirty[c]; c++);
+    if(!dirty[c])
+        return 
+    setTimeout("render()",0)
+    dirty[c]=false;
+ 
+    x = cellWidth * (c%divisions);
+    y = cellHeight *Math.floor(c/divisions);
+
+    var imgd = context.getImageData(x, y, cellWidth, cellHeight);
+    var pix = imgd.data;
+    var out;
+    for (var i = 0, n = pix.length; i < n; i += 4) {
+        out = getRGB(x+i/4%cellWidth,y+Math.floor(i/4/cellWidth))
+        pix[i  ] = out[0]
+        pix[i+1] = out[1]
+        pix[i+2] = out[2]
+        pix[i+3] = 255;
+    }
+    // Draw the ImageData at the given (x,y) coordinates.
+    context.putImageData(imgd, x, y);
+}
+
+</script>
+</head>
+<body>
+<canvas id="myCanvas" width="640" height="480"></canvas>
+</body>
+</html>

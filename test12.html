@@ -1,0 +1,67 @@
+<html>
+
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript" src="tools.js"></script>
+<script type="text/javascript">
+var canvas = false;
+var context =false;
+var lastTime = 0;
+var canvasLoc = [0,0];
+var width = 0;
+var height= 0;
+
+$(document).ready(function(){
+    canvas    = document.getElementById("myCanvas");
+    context   = canvas.getContext('2d');
+    canvasLoc = [canvas.offsetLeft,canvas.offsetTop];
+    width     = canvas.width; 
+    height    = canvas.height;
+    setTimeout("renderloop()",0);
+});
+
+
+var lastTs = 0;
+var mspf = 1; // milliseconds per frame
+
+function renderloop(){
+    var currentTs = timestamp()
+
+    if(lastTs != 0){
+        var dt = currentTs - lastTs;
+        step(dt);
+    }
+    render();
+
+    lastTs = currentTs;
+    var delay = mspf - (timestamp() - lastTs)-1;
+    setTimeout("renderloop()",delay);
+}
+
+
+
+
+function step(dt){
+   $("#output").html(dt+" ") 
+}
+function render(){
+    $("#output").append(timestamp());
+}
+
+
+
+
+
+
+
+
+</script>
+</head>
+<body>
+<canvas id="myCanvas" width="512" height="512"></canvas>
+<br>
+Output:
+<br>
+<div id="output"></div>
+</body>
+</html>

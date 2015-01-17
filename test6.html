@@ -1,0 +1,76 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+
+var canvas = false;
+var ctx = false;
+var lastTime = 0;
+var canvasLoc = [0,0];
+$(document).ready(function(){
+    canvas = document.getElementById("myCanvas");
+    canvas.addEventListener('click', on_click, false);
+    canvasLoc = [canvas.offsetLeft,canvas.offsetTop];
+    ctx = canvas.getContext("2d");
+    ctx.font = "20pt Calibri";
+    ctx.textAlign = "center";
+    init();
+});
+
+function ts(){ return (new Date()).getTime();}
+
+function tick(){
+    var curTime = ts()
+    var ret = 0
+    if(lastTime != 0)
+        ret = curTime - lastTime;
+    lastTime = curTime
+    return ret/1000;
+}
+
+function on_click(ev){
+    var x = ev.clientX - canvasLoc[0];
+    var y = ev.clientY - canvasLoc[1];
+    points.push([x,y])
+    init()
+}
+var points =[]
+function getRGB(x,y){
+    out = [255,255,255]
+    var dx,dy;
+    var d;
+    for(var i = points.length-1; i >=0 ; --i){
+        dx = x-points[i][0]
+        dy = y-points[i][1]
+        d = out[i%3]
+        d = Math.min(Math.sqrt(dx*dx+dy*dy),d)
+        out[i%3]=d
+    }
+    
+    return out
+}
+
+function init(){
+    var context = ctx;
+    var x=0, y=0, width=500, height=500;
+    var imgd = context.getImageData(x, y, width, height);
+    var pix = imgd.data;
+    var out;
+    for (var i = 0, n = pix.length; i < n; i += 4) {
+        out = getRGB(i/4%width,Math.floor(i/4/width))
+        pix[i  ] = out[0]
+        pix[i+1] = out[1]
+        pix[i+2] = out[2]
+        pix[i+3] = 255;
+    }
+    
+    // Draw the ImageData at the given (x,y) coordinates.
+    context.putImageData(imgd, x, y);
+}
+
+</script>
+</head>
+<body>
+<canvas id="myCanvas" width="500" height="500"></canvas>
+</body>
+</html>

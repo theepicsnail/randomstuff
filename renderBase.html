@@ -1,0 +1,121 @@
+<html>
+
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+<script type="text/javascript">
+var canvas = false;
+var context =false;
+var lastTime = 0;
+var divisions = 10;
+var curCell = 0;
+var width = 0; 
+var height=0;
+var cellWidth =1;
+var cellHeight=1;
+var dirty = [];
+
+
+$(document).ready(function(){
+    canvas = document.getElementById("myCanvas");
+    context= canvas.getContext('2d')
+    canvasLoc = [canvas.offsetLeft,canvas.offsetTop];
+    width = canvas.width; 
+    height=canvas.height;
+    cellWidth = Math.floor(width/divisions);
+    cellHeight= Math.floor(height/divisions);
+    for(var i = 0 ; i < divisions*divisions ; i ++){
+        dirty[i]=true;
+    }
+    setTimeout("render()",0);
+});
+
+
+function hslToRgb(h, s, l){
+    var r, g, b;
+
+    if(s == 0){
+        r = g = b = l; // achromatic
+    }else{
+        function hue2rgb(p, q, t){
+            if(t < 0) t += 1;
+            if(t > 1) t -= 1;
+            if(t < 1/6) return p + (q - p) * 6 * t;
+            if(t < 1/2) return q;
+            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        }
+
+        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        var p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+    }
+    return [r * 255, g * 255, b * 255];
+}
+
+function render(){
+    //This function will run through all of the cells
+    //in the image, and repaint the dirty ones.
+    //This function makes multiple calls to itself using 
+    //setTimeout, in order to show the rendering in progress
+
+    var c = 0;
+    for(;c<divisions*divisions && !dirty[c]; c++);
+    if(!dirty[c])
+        return;
+    setTimeout("render()",0);
+    dirty[c]=false;
+ 
+    x = cellWidth * (c%divisions);
+    y = cellHeight *Math.floor(c/divisions);
+
+    var imgd = context.getImageData(x, y, cellWidth, cellHeight);
+    var pix = imgd.data;
+    var out;
+
+    for (var i = 0, n = pix.length; i < n; i += 4) {
+        px = x+i/4%cellWidth;
+        py = y+Math.floor(i/4/cellWidth);
+        
+        out = getRGB(px,py);
+        pix[i  ] = out[0];
+        pix[i+1] = out[1];
+        pix[i+2] = out[2];
+        pix[i+3] = 255;
+    }
+    // Draw the ImageData at the given (x,y) coordinates.
+    context.putImageData(imgd, x, y);
+}
+
+//////////////
+
+var minx = -2;
+var miny = -2;
+var dx = 4;
+var dy = 4;
+
+function getRGB(px,py){
+    var x = minx+px*dx/width;
+    var y = miny+py*dy/height;
+    r = x;
+    i = y;
+    var itr = 0;
+    for(; itr < 1000 && (r*r-i*i)<2; itr++){
+        a = r*r-i*i + x;
+        b = r*i*2 + y;
+        r = a;
+        i = b;
+    }
+     
+    return hslToRgb(itr/1000.0,1,itr==1000?0:.5);
+}
+
+
+</script>
+</head>
+<body>
+<canvas id="myCanvas" width="512" height="512"></canvas>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<html>
+<head>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+google.load("visualization", "1", {packages:["corechart"]});
+function getParameterByName(name)
+{
+  name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+  var regexS = "[\\?&]" + name + "=([^&#]*)";
+  var regex = new RegExp(regexS);
+  var results = regex.exec(window.location.search);
+  if(results == null)
+    return "";
+  else
+    return decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+var canvas = false;
+var ctx = false;
+var lastTime = 0;
+var canvasLoc = [0,0];
+$(document).ready(function(){
+    canvas = document.getElementById("myCanvas");
+    canvas.addEventListener('click', on_click, false);
+    canvasLoc = [canvas.offsetLeft,canvas.offsetTop];
+    ctx = canvas.getContext("2d");
+    ctx.font = "20pt Calibri";
+    ctx.textAlign = "center";
+    var coords = getParameterByName("p").split(",")
+    
+    for(var i = 0 ; i < coords.length-1 ; i += 2){
+        points.push([parseInt(coords[i]), parseInt(coords[i+1])])
+    }
+    
+    init();
+});
+
+function ts(){ return (new Date()).getTime();}
+
+function tick(){
+    var curTime = ts()
+    var ret = 0
+    if(lastTime != 0)
+        ret = curTime - lastTime;
+    lastTime = curTime
+    return ret/1000;
+}
+
+function on_click(ev){
+    var x = ev.clientX - canvasLoc[0];
+    var y = ev.clientY - canvasLoc[1];
+    points.push([x,y])
+    document.getElementById("link").innerHTML="http://tawlk.com:8000/snailsRandomStuff/test8.html?p="+points
+    init()
+}
+var points =[]
+function getRGB(x,y){
+    out = [255,255,255]
+    var dx,dy;
+    var d=255;
+    for(var i = points.length-1; i >=0 ; --i){
+        dx = x-points[i][0]
+        dy = y-points[i][1]
+        d= Math.min(Math.sqrt(dx*dx+dy*dy),d)
+    }
+    
+    return [d,d,d];
+}
+var timing = []
+function init(){
+    var context = ctx;
+    var x=0, y=0, width=500, height=500;
+    var imgd = context.getImageData(x, y, width, height);
+    var pix = imgd.data;
+    var out;
+    tick()
+    for (var i = 0, n = pix.length; i < n; i += 4) {
+        out = getRGB(i/4%width,Math.floor(i/4/width))
+        pix[i  ] = out[0]
+        pix[i+1] = out[1]
+        pix[i+2] = out[2]
+        pix[i+3] = 255;
+    }
+    timing.push([points.length,tick()])
+    // Draw the ImageData at the given (x,y) coordinates.
+    context.putImageData(imgd, x, y);
+    drawChart()
+}
+ function drawChart() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('number', 'count');
+        data.addColumn('number', 'time');
+        data.addRows(timing);
+
+        var options = {
+          title: 'Time to draw',
+          hAxis: {title: 'Points', minValue: 0, maxValue: 60},
+          vAxis: {title: 'Time', minValue: 0, maxValue: .1},
+          legend: 'none'
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+      }
+
+</script>
+</head>
+<body bgcolor="#eeeeee">
+<canvas id="myCanvas" width="500" height="500"></canvas>
+<br>
+<div id="chart_div" style="width: 900px; height: 250px;"></div>
+<span id="link"/>
+</body>
+</html>

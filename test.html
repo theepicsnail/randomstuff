@@ -1,0 +1,30 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="draw.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){
+var c = document.getElementById("myCanvas");
+var ctx = c.getContext("2d");
+
+$.get("draw.txt", function(data){
+    var instructions = data.split("\n");
+    for(var id in instructions){
+        var instruction = instructions[id];
+        var args = instruction.split(" ");
+        if(args[0]=="fs")
+            ctx.fillStyle = "#"+args[1]
+        else if(args[0]=="rect")
+            ctx.fillRect(args[1],args[2],args[3],args[4]);
+            
+    }
+});
+
+});
+</script>
+</head>
+<body>
+<canvas id="myCanvas" width="200" height="100"></canvas>
+</body>
+</html>

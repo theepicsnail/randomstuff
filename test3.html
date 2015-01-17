@@ -1,0 +1,163 @@
+
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+<script type="text/javascript">
+var STATE = { 
+    NOTREADY: 0,
+    READY:    1,
+    MOVING:   2,
+    RETURNING:3
+};
+
+var count = [1,2,3,4,5,6,7,8,9,10,11,12];
+var width = 3; 
+var height = Math.floor(count.length/width);
+var canvas = false;
+var ctx = false;
+var state = STATE.NOTREADY;
+
+var armPosition = [width,height-1]
+var targestPosition = [0,0];
+var motionInterval = 0;
+var lastTime = 0;
+
+$(document).ready(function(){
+    canvas = document.getElementById("myCanvas");
+    ctx = canvas.getContext("2d");
+    state = STATE.READY;
+    drawMachine();
+});
+
+function ts(){ return (new Date()).getTime();}
+
+function startMoving(){
+    state = STATE.MOVING;
+    lastTime = ts();
+    motionInterval = setInterval("move()",10);
+}
+
+function move(){
+    if(state != STATE.MOVING && state != STATE.RETURNING){
+        alert("move() was called in an invalid state.");
+        clearInterval(motionInterval);
+        return;
+    }
+    drawMachine()
+    var dt = ts()-lastTime;
+    lastTime += dt;
+
+    moveSize = dt/1000; // move 1 cell per second
+    dist = targetPosition[0] - armPosition[0]
+    if(dist != 0){
+        if(dist < 0){
+            dist = Math.max(dist,-moveSize);
+        }else{
+            dist = Math.min(dist,moveSize);
+        }
+        armPosition[0] += dist; 
+        return
+    }
+    dist = targetPosition[1] - armPosition[1]
+    if(dist != 0){
+        if(dist < 0){
+            dist = Math.max(dist,-moveSize);
+        }else{
+            dist = Math.min(dist,moveSize);
+        }
+        armPosition[1] += dist; 
+        return
+    }
+    if (state == STATE.MOVING){
+        state = STATE.RETURNING;
+        targetPosition = [width,height-1];
+    }else if(state == STATE.RETURNING){
+        state = STATE.READY;
+        clearInterval(motionInterval);
+    }
+}
+
+
+
+function drawMachine(){
+    if(state == STATE.NOTREADY)
+        return;
+    ctx.fillStyle="#FFFFFF";
+    ctx.fillRect(0,0,400,400)
+    ctx.fillStyle="#000000";
+    var size = 40;
+    for(var col = 0 ; col < width ; col ++){
+        ctx.fillText(col+1,(col+1)*size, size/4)
+    }
+    for(var row = 0 ; row < height ; row ++){
+        ctx.fillText(String.fromCharCode(65+row),size/4, (row+1)*size );
+    }
+    for(var idx in count){
+        var row = Math.floor(idx/width)+1;
+        var col = idx%width+1;
+        ctx.fillText(count[idx],col*size,row*size);
+    }
+    ctx.strokeRect(size/2+7,size/2,size*width,size*height);
+    ctx.strokeRect((armPosition[0]+.9)*size,(armPosition[1]+.7)*size,size/2,size/2);
+     
+}
+
+function go(){
+    if(state != STATE.READY)
+    {
+        alert("Not ready yet. Please hold.");
+        return;
+    }
+
+    var loc = document.getElementById("location").value.toUpperCase();
+    if(loc.length != 2){
+        alert("Invalid input. Please enter something like 'A0'");
+        return;
+    }
+
+    var code1 = loc.charCodeAt(0);
+    var code2 = loc.charCodeAt(1);
+
+    var tRow = -1;
+    var tCol = -1;
+    
+    if(code1 <58) //it's a number
+        tCol = code1-49 // '1' -> 0 , '2'->1 etc..
+    else
+        tRow = code1-65 // 'A' -> 0, 'B'->2
+
+    if(code2 < 58)
+        tCol = code2-49
+    else
+        tRow = code2-65
+
+    if(tRow == -1  || tCol == -1)
+    {
+        alert("Invalid input. Please enter something like 'A0'");
+        return;
+    }
+
+    if(tRow < 0 || tCol < 0 || tRow >= height || tCol >= width)
+    {
+        alert("Input out of range. Please enter a valid location.");
+        return;
+    }
+
+    targetPosition=[tCol,tRow];
+    startMoving()
+
+}
+
+
+</script>
+</head>
+<body>
+<canvas id="myCanvas" width="400" height="400"></canvas>
+<br>
+<input id="location"/>
+<input id="submit" type="submit" onclick="go()"/>
+
+
+</body>
+</html>

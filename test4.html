@@ -1,0 +1,138 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="maths.js"></script>
+<script type="text/javascript">
+var canvas = false;
+var ctx = false;
+var lastTime = 0;
+var atan2 = Math.atan2
+var sqrt = Math.sqrt
+var sin = Math.sin
+var cos = Math.cos
+var pi = Math.PI
+var abs = Math.abs
+var hypot = function(a,b){ return sqrt(a*a+b*b); }  
+var gravity = [0,100]
+var floors = [[0,300,200,400],[200,500,500,400],[300,500,400,300]]
+//var floors = []
+
+//floors.push([0,350,300,400])
+//floors.push([250,300,490,100])
+//floors.push([200,300,400,200])
+//floors.push([20,300,40,400])
+
+//floors.push([0,0,200,400])
+/*
+last = false
+s= -pi
+e = pi * 9
+for(var t = s; t < e; t += .01){
+    p = (t-s)/(e-s)
+    x = 150+(150-p*120)*cos(t)
+    y = 350-(150-p*120)*sin(t)
+    if(last){
+        floors.push([x,y,last[0],last[1]])
+    }
+    last = [x,y]
+}
+floors.push([0,0,0,500])
+floors.push([0,0,500,0])
+floors.push([500,0,500,500])
+floors.push([0,500,500,500])
+*/
+
+
+
+var ball = new Ball()
+$(document).ready(function(){
+    canvas = document.getElementById("myCanvas");
+    ctx = canvas.getContext("2d");
+    init();
+});
+
+function ts(){ return (new Date()).getTime();}
+
+function tick(){
+    var curTime = ts()
+    var ret = 0
+    if(lastTime != 0)
+        ret = curTime - lastTime;
+    lastTime = curTime
+    return ret/1000;
+}
+function Ball(){
+    this.reset= function(){
+        this.x = 10
+        this.y = 10
+        this.dx= 0
+        this.dy= 0
+        this.r = 10
+    }
+    this.draw = function(){
+              
+        ctx.arc(this.x,this.y,this.r,0,pi*2,true)
+    }
+    this.pos = function(){
+        return [this.x,this.y];
+    }
+    this.step= function(dt){
+         
+        this.x += this.dx * dt
+        this.y += this.dy * dt
+        this.dx+= gravity[0]*dt
+        this.dy+= gravity[1]*dt
+        if(this.y > 600) this.reset()
+    }
+    this.reset();
+}
+
+function init(){
+    ball = new Ball();
+    setInterval("step()",1)
+}
+
+function step(){
+    var dt = tick(); // seconds 
+    ctx.fillStyle="#BBB";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle="#000";
+    ctx.beginPath();
+    ball.draw()
+    ball.step(dt)
+    pos = ball.pos()
+    gdir = atan2(gravity[1],gravity[0])
+
+    for(var i in floors){
+        var x1 = floors[i][0]
+        var y1 = floors[i][1]
+        var x2 = floors[i][2]
+        var y2 = floors[i][3]
+        ctx.moveTo(x1,y1)
+        ctx.lineTo(x2,y2)
+
+        var tmp = linePointDist([x1,y1],[x2,y2],pos)
+        if(tmp[0] < ball.r){
+            var nDir = atan2(tmp[1][1]-pos[1],tmp[1][0]-pos[0])
+            var overDist = ball.r-tmp[0]
+            ball.x -= cos(nDir)*overDist
+            ball.y -= sin(nDir)*overDist
+            var mag = hypot(y2-y1,x2-x1)
+            var dir = atan2(y2-y1,x2-x1)
+            var rmag = ((x2-x1)*ball.dx + (y2-y1)*ball.dy)/mag
+            ball.dx = rmag*cos(dir)
+            ball.dy = rmag*sin(dir)
+ //           gravity=[cos(nDir)*100,sin(nDir)*100]
+        }
+    }
+    ctx.stroke()
+}
+</script>
+</head>
+<body>
+<canvas id="myCanvas" width="500" height="500"></canvas>
+<br>
+
+
+</body>
+</html>

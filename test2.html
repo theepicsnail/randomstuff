@@ -1,0 +1,58 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+<script type="text/javascript">
+
+
+function colorString(val){
+    return "rgb("+val+","+val+","+val+")";
+}
+
+function inCarpet (x,y){
+    while ( x > 0 || y > 0 )
+    {
+        if(x%3==1 && y%3==1) return 0;
+        x=Math.floor(x/3);
+        y=Math.floor(y/3);
+    } 
+    return 255;
+}
+
+
+var start = 0;
+var ctx = false;
+var pixels = false;
+$(document).ready(function(){
+    var c = document.getElementById("myCanvas");
+    ctx = c.getContext("2d");
+    start = (new Date()).getTime();
+    pixels = ctx.getImageData(0,0,256,256);
+    setTimeout("update()",1)
+});
+
+function update(){
+    var scale = ((new Date()).getTime()-start)/1000.0 + 1;
+    scale = .5;
+
+    var n = pixels.length;
+    for(var i=0; i<n; i+=4){
+        var p = i/4;
+        var a = p%256;
+        var b = Math.floor(p/256);
+        pixels.data[i+1]=inCarpet(a,b);
+        pixels.data[i]=255;
+        pixels.data[i+2]=0;
+        pixels.data[i+3]=255;
+    }
+    ctx.putImageData(pixels,0,0);
+
+}
+
+
+</script>
+</head>
+<body>
+<canvas id="myCanvas" width="512" height="512"></canvas>
+</body>
+</html>

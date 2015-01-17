@@ -1,0 +1,72 @@
+<html>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript">
+var offset = 0;
+var countm1 = 8;
+var size = 100;
+$(function(){
+$('#moveLeft').click(function() {
+    offset += 1;
+    $("#content img").each(function(i,elem){
+        var finalOpacity = Math.max(0,Math.sin(Math.PI*i/countm1)-.001)
+        var fadeToOpacity= Math.max(0,Math.sin(Math.PI*(i-1)/countm1,1))
+        $(elem).animate({
+            left: '-='+size,
+            opacity: fadeToOpacity
+          }, 1000, function() {
+            $(this).css('left', "+="+size)
+            $(this).css('opacity', finalOpacity)
+            $(this).css('width',size)
+            $(this).attr("src", (offset+i)+".png")
+        });
+    });
+});
+$('#moveRight').click(function() {
+    offset -= 1;
+    $("#content img").each(function(i,elem){
+        var finalOpacity = Math.max(0,Math.sin(Math.PI*i/countm1))
+        var fadeToOpacity= Math.max(0,Math.sin(Math.PI*(i+1)/countm1))
+        
+        $(elem).animate({
+            left: '+='+size,
+            opacity: fadeToOpacity 
+          }, 1000, function() {
+            $(this).attr("src", (offset+i)+".png")
+            $(this).css('left', "-="+size)
+            $(this).css('width',size)
+            $(this).css('opacity', finalOpacity)
+        });
+    });
+});
+function moveTo(pos){
+    offset=pos;
+    
+}
+
+
+
+
+moveTo(5);
+
+
+
+});
+    </script>
+</head>
+<body>
+<div id="content">
+<img src="0.png" style="position:relative;"/>
+<img src="0.png" style="position:relative;"/>
+<img src="0.png" style="position:relative;"/>
+<img src="0.png" style="position:relative;"/>
+<img src="0.png" style="position:relative;"/>
+<img src="0.png" style="position:relative;"/>
+<img src="0.png" style="position:relative;"/>
+<img src="0.png" style="position:relative;"/>
+<img src="0.png" style="position:relative;"/>
+</div>
+<button id="moveLeft">Left</button>
+<button id="moveRight">Right</button>
+</body>
+</html>

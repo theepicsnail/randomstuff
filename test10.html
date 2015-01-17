@@ -1,0 +1,180 @@
+<html>
+
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+<script type="text/javascript">
+var canvas = false;
+var context =false;
+var lastTime = 0;
+var canvasLoc = [0,0];
+var divisions = 10;
+var curCell = 0;
+var width = 0; 
+var height=0;
+var cellWidth =1;
+var cellHeight=1;
+var dirty = []
+var minx = -2;
+var dx = 4/512;
+var miny = -2;
+var dy = 4/512;
+
+function resetZoom(){
+    minx = -1.5
+    dx = 2/512
+    miny = -1
+    dy = 2/512
+    for(var i = 0 ; i < divisions*divisions ; i ++){
+        dirty[i]=true;
+    }
+    render()    
+}
+
+function on_click(ev){
+    console.log(minx+","+miny+","+dx*512+","+dy*512)
+    var x = (ev.clientX - canvasLoc[0])/width; // 0 to 1
+    var y = (ev.clientY - canvasLoc[1])/height; // for how far right/down they are.
+
+    var factor =2 // How much to zoom in
+    var ddx = dx / factor;
+    var ddy = dy / factor;
+    minx+= (dx-ddx)*512*x
+    miny+= (dy-ddy) *512*y
+
+    dx = ddx
+    dy = ddy
+    
+    for(var i = 0 ; i < divisions*divisions ; i ++){
+        dirty[i]=true;
+    }
+     
+    render()
+}
+
+$(document).ready(function(){
+    canvas = document.getElementById("myCanvas");
+    canvas.addEventListener('click', on_click, false);
+    canvasLoc = [canvas.offsetLeft,canvas.offsetTop];
+    context = canvas.getContext("2d");
+    context.font = "20pt Calibri";
+    context.textAlign = "center";
+    width = canvas.width; 
+    height=canvas.height;
+    cellWidth = Math.floor(width/divisions);
+    cellHeight= Math.floor(height/divisions);
+    for(var i = 0 ; i < divisions*divisions ; i ++){
+        dirty[i]=true;
+    }
+    setTimeout("render()",0)
+});
+
+function tick(){
+    //This function tells you how much time has passed (in seconds) 
+    // since the last time this function was called.
+    //If this is the first call, 0 will be returned.
+    var curTime = (new Date()).getTime();
+    var ret = 0
+    if(lastTime != 0)
+        ret = curTime - lastTime;
+    lastTime = curTime
+    return ret/1000;
+}
+
+function hslToRgb(h, s, l){
+    var r, g, b;
+
+    if(s == 0){
+        r = g = b = l; // achromatic
+    }else{
+        function hue2rgb(p, q, t){
+            if(t < 0) t += 1;
+            if(t > 1) t -= 1;
+            if(t < 1/6) return p + (q - p) * 6 * t;
+            if(t < 1/2) return q;
+            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        }
+
+        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        var p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+    }
+    return [r * 255, g * 255, b * 255];
+}
+
+
+function getRGB(x,y){
+    r = x
+    i = y
+    var itr = 0;
+    for(; itr < 1000 && (r*r-i*i)<2; itr++){
+        a = r*r-i*i + x
+        b = r*i*2 + y
+        r = a
+        i = b
+    }
+     
+    return hslToRgb(itr/1000.0,1,itr==1000?0:.5) ;
+}
+
+function render(){
+    //This function will run through all of the cells
+    //in the image, and repaint the dirty ones.
+    //This function makes multiple calls to itself using 
+    //setTimeout, in order to show the rendering in progress
+
+    var c = 0;
+    for(;c<divisions*divisions && !dirty[c]; c++);
+    if(!dirty[c])
+        return 
+    setTimeout("render()",0)
+    dirty[c]=false;
+ 
+    x = cellWidth * (c%divisions);
+    y = cellHeight *Math.floor(c/divisions);
+
+    tick();
+    var imgd = context.getImageData(x, y, cellWidth, cellHeight);
+    var pix = imgd.data;
+    var out;
+
+    for (var i = 0, n = pix.length; i < n; i += 4) {
+        px = x+i/4%cellWidth
+        py = y+Math.floor(i/4/cellWidth)
+        
+        out = getRGB(minx+px*dx,miny+py*dy)
+        pix[i  ] = out[0]
+        pix[i+1] = out[1]
+        pix[i+2] = out[2]
+        pix[i+3] = 255;
+    }
+    // Draw the ImageData at the given (x,y) coordinates.
+    context.putImageData(imgd, x, y);
+}
+ function drawChart() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('number', 'count');
+        data.addColumn('number', 'time');
+        data.addRows(timing);
+
+        var options = {
+          title: 'Time to draw',
+          hAxis: {title: 'Points', minValue: 0, maxValue: 60},
+          vAxis: {title: 'Time', minValue: 0, maxValue: 1},
+          legend: 'none'
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+      }
+
+</script>
+</head>
+<body>
+<canvas id="myCanvas" width="512" height="512"></canvas>
+<button onclick="resetZoom()"/>
+</body>
+</html>

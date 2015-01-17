@@ -1,0 +1,64 @@
+<html>
+<head>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+google.load("visualization", "1", {packages:["corechart"]});
+
+function ts(){ return (new Date()).getTime();}
+
+var lastTime = 0;
+function tick(){
+    var curTime = ts()
+    var ret = 0
+    if(lastTime != 0)
+        ret = curTime - lastTime;
+    lastTime = curTime
+    return ret/1000;
+}
+    var context = ctx;
+    var x=0, y=0, width=500, height=500;
+    var imgd = context.getImageData(x, y, width, height);
+    var pix = imgd.data;
+    var out;
+    tick()
+    for (var i = 0, n = pix.length; i < n; i += 4) {
+        out = getRGB(i/4%width,Math.floor(i/4/width))
+        pix[i  ] = out[0]
+        pix[i+1] = out[1]
+        pix[i+2] = out[2]
+        pix[i+3] = 255;
+    }
+    timing.push([points.length,tick()])
+    // Draw the ImageData at the given (x,y) coordinates.
+    context.putImageData(imgd, x, y);
+    drawChart()
+}
+ function drawChart() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('number', 'count');
+        data.addColumn('number', 'time');
+        data.addRows(timing);
+
+        var options = {
+          title: 'Time to draw',
+          hAxis: {title: 'Points', minValue: 0, maxValue: 60},
+          vAxis: {title: 'Time', minValue: 0, maxValue: .1},
+          legend: 'none'
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+      }
+
+$(document).ready(function(){
+});
+</script>
+</head>
+<body bgcolor="#eeeeee">
+<canvas id="myCanvas" width="500" height="500"></canvas>
+<br>
+<div id="chart_div" style="width: 900px; height: 250px;"></div>
+<span id="link"/>
+</body>
+</html>

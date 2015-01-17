@@ -1,0 +1,133 @@
+<html>
+<head>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+google.load("visualization", "1", {packages:["corechart"]});
+$(document).ready(function(){
+    setTimeout(step,0);
+});
+
+function gcd1(a,b){
+    var tmp;
+    while(b!=0){
+        tmp = a%b;
+        a = b;
+        b = tmp;
+    }
+    return a
+}
+function lcm1(a,b){
+    return a*b/gcd1(a,b);
+}
+
+function lcm2(a,b){
+    var list1 = [];
+    var list2 = [];
+    var i = 0;
+    while(i<b){
+        list1.push(a*(i+1))
+        i++;
+    }
+    i = 0;
+    while(i<a){
+        list2.push(b*(i+1))
+        i++;
+    }
+    for(idx in list1){
+        var val = list1[idx];
+        if(list2.indexOf(val)!=-1)
+            return val;
+    }
+    return a*b;
+}
+
+
+var data = [];
+var dataNum =0;
+function step(){
+    var steps = 10;//number of steps to take between updates
+    while(steps>0){
+        var curData = [];
+        var a = fibs[0];
+        var b = fibs[1];
+        var time = 0;
+        fibs.push(fibs.shift()+2)
+        //fibs.push(a+fibs.shift())
+        var reps = 1;//number of times to test an item.
+        var i=0;
+        dataNum ++;
+
+        curData.push(dataNum);
+        document.getElementById("nums").innerHTML="Computing LCM("+a+","+b+")";
+
+        tick();
+        while(i<reps){
+            lcm1(a,b);
+            i++;
+        }
+        time = tick();
+        curData.push(time)
+        i=0;
+
+        tick();
+        while(i<reps){
+            lcm2(a,b);
+            i++;
+        }
+        time = tick();
+        curData.push(time)
+
+
+        steps --;
+        data.push(curData);
+    }
+//    while(data.length>500)    data.shift();
+
+    updateCharts();
+    setTimeout(step,10);
+//    step();
+}
+
+
+
+var fibs = [2,1];
+var lastTime = 0;
+function tick(){
+    var curTime = (new Date()).getTime();
+    var ret = 0
+    if(lastTime != 0)
+        ret = curTime - lastTime;
+    lastTime = curTime
+    return ret/1000;
+}
+
+
+ function drawChart(dataval, chart) {
+        var data = new google.visualization.DataTable();
+        data.addColumn('number', 'count');
+        data.addColumn('number', 'lcm1');
+        data.addColumn('number', 'lcm2');
+        data.addRows(dataval);
+
+        var options = {
+          title: chart,
+          hAxis: {title: 'Inputs', minValue: 0, maxValue: 60},
+          vAxis: {title: 'Time', minValue: 0, maxValue: .01},
+          chartArea:{left:"70",top:"20",width:"90%",height:"89%"},
+          legend: 'none'
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById(chart));
+        chart.draw(data, options);
+      }
+function updateCharts(){
+    drawChart(data,"chart1");
+}
+</script>
+</head>
+<body bgcolor="#eeeeee">
+<div id="chart1" style="width: 700px; height: 500px;">Test</div>
+<span id="nums"/>
+</body>
+</html>
